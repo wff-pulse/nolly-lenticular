@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ノーリー レンチキュラー</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:#000;overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;overscroll-behavior:none}
+.card{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#000;cursor:pointer}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* レンズの筋：1本ごとに影とハイライト。傾きでハイライトが筋の中を移動する */
+.ridges{position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:.55;
+  background-image:linear-gradient(90deg,rgba(0,0,0,.55) 0,rgba(0,0,0,0) 22%,rgba(255,255,255,.0) 40%,rgba(255,255,255,.75) 52%,rgba(255,255,255,0) 64%,rgba(0,0,0,0) 80%,rgba(0,0,0,.5) 100%);
+  background-size:var(--p,4px) 100%;background-position:calc(var(--hl,0) * var(--p,4px)) 0}
+/* 虹色の反射：レンチキュラー特有のプラスチックの虹 */
+.rainbow{position:absolute;inset:-30%;pointer-events:none;mix-blend-mode:soft-light;opacity:.5;
+  background:linear-gradient(100deg,transparent 20%,rgba(255,0,128,.55) 30%,rgba(255,200,0,.55) 38%,rgba(0,255,160,.55) 46%,rgba(0,170,255,.55) 54%,rgba(160,0,255,.55) 62%,transparent 72%);
+  transform:translateX(calc(var(--t,0) * 45%))}
+/* 表面のテカリ（白い光の帯） */
+.glare{position:absolute;inset:-30%;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.22) 48%,rgba(255,255,255,.05) 53%,transparent 58%);
+  transform:translate(calc(var(--t,0) * -60%),calc(var(--v,0) * 20%))}
+/* 周辺を少し暗く（厚みのあるプラスチック感） */
+.vignette{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 45%,transparent 60%,rgba(0,0,0,.35) 100%)}
+</style>
+</head>
+<body>
+<div class="card" id="card" onclick="void 0">
+  <canvas id="cv"></canvas>
+  <div class="ridges"></div><div class="rainbow"></div><div class="glare"></div><div class="vignette"></div>
+</div>
+<script>
+(function(){
+  /* ===== 作品ごとの設定 ===== */
+  // 日本縦断8枚：五稜郭 → ねぶた → 竹下通り → 東京タワー → 富士山と五重塔 → 道頓堀 → 秋吉台 → 美ら海
+  var SET=window.LENTI_SET||{imgs:['japan8-1.jpg','japan8-2.jpg','japan8-3.jpg','japan8-4.jpg','japan8-5.jpg','japan8-6.jpg','japan8-7.jpg','japan8-8.jpg'],start:5,deg:6.5};
+  var LOOK={
+    pitch:4,      // レンズ1本の幅（px）。小さいほど細かい
+    sweep:.55,    // 切り替わりが画面の端から端へ流れる強さ（1枚分に対する割合）
+    ghost:.10,    // 隣の絵がうっすら残る強さ（0〜0.2）
+    parallax:.018 // 傾けた時に絵がわずかに横へずれる量（奥行き感）
+  };
+  /* ========================= */
+  var card=document.getElementById('card'), cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+  var n=SET.imgs.length, imgs=[], scaled=[], W=0,H=0,DPR=1;
+  var center=(SET.start-.5)/n, target=center, cur=center, base=null, baseB=null, vTarget=0, vCur=0;
+  var events=0,lastG=null,perm='未';
+  card.style.setProperty('--p',LOOK.pitch+'px');
+
+  // 画像を画面サイズにあらかじめ縮小（object-fit:cover と同じ切り抜き、左右に少し余白を持たせる）
+  function prepare(){
+    DPR=Math.min(window.devicePixelRatio||1,2);
+    W=Math.round(innerWidth*DPR); H=Math.round(innerHeight*DPR);
+    cv.width=W; cv.height=H;
+    var extra=Math.round(W*LOOK.parallax*2);
+    scaled=imgs.map(function(im){
+      if(!im.naturalWidth) return null;
+      var c=document.createElement('canvas'); c.width=W+extra*2; c.height=H;
+      var g=c.getContext('2d'), s=Math.max(c.width/im.naturalWidth,c.height/im.naturalHeight);
+      var w=im.naturalWidth*s,h=im.naturalHeight*s;
+      g.drawImage(im,(c.width-w)/2,(c.height-h)/2,w,h); return c;
+    });
+  }
+  var loaded=0;
+  SET.imgs.forEach(function(src,i){
+    var im=new Image(); im.onload=function(){ if(++loaded===n) prepare(); }; im.src=src; imgs[i]=im;
+  });
+  addEventListener('resize',function(){ if(loaded===n) prepare(); });
+
+  function drawFrame(){
+    if(!scaled.length||!scaled[0]) return;
+    var P=Math.max(2,Math.round(LOOK.pitch*DPR)), cols=Math.ceil(W/P);
+    var extra=(scaled[0].width-W)/2;
+    var t=cur*2-1, shift=Math.round(extra + t*W*LOOK.parallax); // 視差
+    for(var c=0;c<cols;c++){
+      var x=c*P, u=x/W;
+      // レンズごとに見える角度が少し違う → 切り替わりが横に流れる
+      var p=(cur + (u-.5)*LOOK.sweep/n)*n - .5;
+      p=Math.max(0,Math.min(n-1,p));
+      var a=Math.floor(p), f=p-a, b=Math.min(n-1,a+1);
+      // 境目付近だけ2枚を縞で混ぜる
+      var mix=f<.35?0:f>.65?1:(f-.35)/.3;
+      var wb=Math.round(P*mix), wa=P-wb;
+      if(wa>0) ctx.drawImage(scaled[a],x+shift,0,wa,H,x,0,wa,H);
+      if(wb>0) ctx.drawImage(scaled[b],x+wa+shift,0,wb,H,x+wa,0,wb,H);
+      // ゴースト：隣の絵がうっすら残る
+      var gi=mix<.5?b:a;
+      if(LOOK.ghost>0&&gi!==(mix<.5?a:b)){
+        ctx.globalAlpha=LOOK.ghost; ctx.drawImage(scaled[gi],x+shift,0,P,H,x,0,P,H); ctx.globalAlpha=1;
+      }
+    }
+  }
+  function smoothStep(){
+    cur+=(target-cur)*.18; vCur+=(vTarget-vCur)*.15;
+    var t=cur*2-1;
+    card.style.setProperty('--t',t.toFixed(3));
+    card.style.setProperty('--v',vCur.toFixed(3));
+    card.style.setProperty('--hl',((t*3)%1).toFixed(3));
+    drawFrame();
+    requestAnimationFrame(smoothStep);
+  }
+  requestAnimationFrame(smoothStep);
+
+  function tiltOf(e){
+    var ang=(screen.orientation&&screen.orientation.angle)||window.orientation||0;
+    if(ang===90) return e.beta; if(ang===-90||ang===270) return -e.beta; return e.gamma;
+  }
+  function onOrient(e){
+    if(e.gamma==null) return;
+    events++; var g=tiltOf(e); lastG=g;
+    if(base===null){ base=g; baseB=e.beta; }
+    target=Math.max(0,Math.min(.999,center+(g-base)/(SET.deg*n)));
+    vTarget=Math.max(-1,Math.min(1,((e.beta||0)-baseB)/25));
+  }
+  var listening=false;
+  function listen(){ if(!listening){ listening=true; addEventListener('deviceorientation',onOrient,true); } }
+  var needsPermission=typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function';
+  if(!needsPermission){ listen(); perm='不要'; }
+  card.addEventListener('click',function(){
+    if(needsPermission&&perm!=='granted'){
+      try{ DeviceOrientationEvent.requestPermission().then(function(r){ perm=r; if(r==='granted') listen(); }).catch(function(x){ perm='エラー:'+(x&&x.message||x); }); }
+      catch(x){ perm='エラー:'+(x&&x.message||x); }
+      return;
+    }
+    base=null;
+  });
+
+  if(/debug/.test(location.search)){
+    var d=document.createElement('pre');
+    d.style.cssText='position:fixed;left:8px;top:40px;z-index:9;margin:0;padding:8px;background:rgba(0,0,0,.7);color:#0f0;font:12px monospace;white-space:pre-wrap;max-width:90vw;pointer-events:none';
+    document.body.appendChild(d);
+    setInterval(function(){d.textContent='版: lens8-v1\n許可結果: '+perm+'\nセンサー受信: '+events+'回\n傾き: '+(lastG==null?'-':lastG.toFixed(1))+'\n位置: '+cur.toFixed(3);},300);
+  }
+})();
+</script>
+</body>
+</html>
