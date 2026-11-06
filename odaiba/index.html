@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ノーリー レンチキュラー</title>
+<style>
+:root{--p:6px}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;background:#000;overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;overscroll-behavior:none}
+.card{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#000;cursor:pointer}
+.layer{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.masked{-webkit-mask-image:repeating-linear-gradient(90deg,#000 0 var(--w,0px),transparent var(--w,0px) var(--p));
+        mask-image:repeating-linear-gradient(90deg,#000 0 var(--w,0px),transparent var(--w,0px) var(--p))}
+.lens{position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:.35;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.35) 0 1px,transparent 1px calc(var(--p) - 1px),rgba(0,0,0,.35) calc(var(--p) - 1px) var(--p))}
+.sheen{position:absolute;inset:-20%;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.28) 47%,rgba(170,210,255,.18) 52%,transparent 64%);
+  transform:translateX(calc(var(--t,0) * 38%))}
+</style>
+</head>
+<body>
+<div class="card" id="card" onclick="void 0">
+  <div class="lens"></div><div class="sheen"></div>
+</div>
+<script>
+(function(){
+  // 傾きだけで切り替え（指での操作なし）
+  // 絵柄セット：左に傾けた時 → 正面 → 右に傾けた時。URL末尾 #odaiba でお台場セット
+  // imgs：並び順／start：傾けていない時に見せる絵（1から数える）／deg：1枚あたりの傾き角度
+  var SETS={
+    neon:{imgs:['neon-1.jpg','neon-2.jpg','neon-3.jpg'],start:2,deg:12},
+    odaiba:{imgs:['odaiba-1.jpg','odaiba-2.jpg','odaiba-3.jpg'],start:2,deg:12},
+    // 日本縦断：五稜郭 → 東京タワー → 富士山と五重塔 → 道頓堀 → 秋吉台 → 美ら海
+    japan:{imgs:['japan-1.jpg','japan-2.jpg','japan-3.jpg','japan-4.jpg','japan-5.jpg','japan-6.jpg'],start:3,deg:8}
+  };
+  var card=document.getElementById('card'), lensEl=card.querySelector('.lens');
+  var P=6, SOFT=.30;
+  var layers=[], set=null, center=.5, target=.5, cur=.5, base=null, events=0, lastG=null, perm='未';
+
+  function useSet(){
+    set=SETS['odaiba'];
+    layers.forEach(function(l){l.remove();}); layers=[];
+    set.imgs.forEach(function(s,i){
+      var im=document.createElement('img'); im.className='layer'+(i?' masked':''); im.alt=''; im.src=s;
+      card.insertBefore(im,lensEl); layers.push(im);
+    });
+    center=(set.start-.5)/set.imgs.length; target=cur=center; base=null;
+  }
+  useSet(); addEventListener('hashchange',useSet);
+
+  function smooth(x){return x<=0?0:x>=1?1:x*x*(3-2*x);}
+  (function loop(){
+    cur+=(target-cur)*.2;
+    var n=layers.length, pos=cur;
+    for(var i=1;i<n;i++){ var b=i/n,w=SOFT/n; layers[i].style.setProperty('--w',(smooth((pos-(b-w/2))/w)*P).toFixed(2)+'px'); }
+    card.style.setProperty('--t',(pos*2-1).toFixed(3));
+    requestAnimationFrame(loop);
+  })();
+
+  function tiltOf(e){
+    var ang=(screen.orientation&&screen.orientation.angle)||window.orientation||0;
+    if(ang===90) return e.beta; if(ang===-90||ang===270) return -e.beta; return e.gamma;
+  }
+  function onOrient(e){
+    if(e.gamma==null) return;
+    events++; var g=tiltOf(e); lastG=g;
+    if(base===null) base=g;
+    target=Math.max(0,Math.min(.999,center+(g-base)/(set.deg*layers.length)));
+  }
+  var listening=false;
+  function listen(){ if(!listening){ listening=true; addEventListener('deviceorientation',onOrient,true); } }
+
+  var needsPermission=typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function';
+  if(!needsPermission){ listen(); perm='不要'; }
+
+  // iPhone：センサー許可は画面タップでしか求められないため、最初の1タップで許可を依頼
+  // 許可後のタップは「今の角度を中央に戻す」
+  function onTap(){
+    if(needsPermission&&perm!=='granted'){
+      try{
+        DeviceOrientationEvent.requestPermission().then(function(r){ perm=r; if(r==='granted') listen(); })
+          .catch(function(x){ perm='エラー:'+(x&&x.message||x); });
+      }catch(x){ perm='エラー:'+(x&&x.message||x); }
+      return;
+    }
+    base=null;
+  }
+  card.addEventListener('click',onTap);
+
+  // 確認用：URLに ?debug を付けると状態を表示
+  if(/debug/.test(location.search)){
+    var d=document.createElement('pre');
+    d.style.cssText='position:fixed;left:8px;top:40px;z-index:9;margin:0;padding:8px;background:rgba(0,0,0,.7);color:#0f0;font:12px monospace;white-space:pre-wrap;max-width:90vw;pointer-events:none';
+    document.body.appendChild(d);
+    setInterval(function(){d.textContent='版: v5\n許可が必要: '+needsPermission+'\n許可結果: '+perm+'\nセンサー受信: '+events+'回\n傾き: '+(lastG==null?'-':lastG.toFixed(1))+'\nhttps: '+(location.protocol==='https:')+'\nUA: '+navigator.userAgent;},300);
+  }
+})();
+</script>
+</body>
+</html>
