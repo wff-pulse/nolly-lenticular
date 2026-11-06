@@ -25,33 +25,40 @@ html,body{margin:0;width:100%;height:100%;background:#000;overflow:hidden;
 </head>
 <body>
 <div class="card" id="card" onclick="void 0">
-  <img class="layer" alt="">
-  <img class="layer masked" alt="">
-  <img class="layer masked" alt="">
   <div class="lens"></div><div class="sheen"></div>
 </div>
 <script>
 (function(){
   // 傾きだけで切り替え（指での操作なし）
   // 絵柄セット：左に傾けた時 → 正面 → 右に傾けた時。URL末尾 #odaiba でお台場セット
+  // imgs：並び順／start：傾けていない時に見せる絵（1から数える）／deg：1枚あたりの傾き角度
   var SETS={
-    neon:['neon-1.jpg','neon-2.jpg','neon-3.jpg'],
-    odaiba:['odaiba-1.jpg','odaiba-2.jpg','odaiba-3.jpg']
+    neon:{imgs:['neon-1.jpg','neon-2.jpg','neon-3.jpg'],start:2,deg:12},
+    odaiba:{imgs:['odaiba-1.jpg','odaiba-2.jpg','odaiba-3.jpg'],start:2,deg:12},
+    // 日本縦断：五稜郭 → 東京タワー → 富士山と五重塔 → 道頓堀 → 秋吉台 → 美ら海
+    japan:{imgs:['japan-1.jpg','japan-2.jpg','japan-3.jpg','japan-4.jpg','japan-5.jpg','japan-6.jpg'],start:3,deg:8}
   };
-  var card=document.getElementById('card');
-  var layers=[].slice.call(card.querySelectorAll('.layer'));
-  var P=6, SOFT=.30, RANGE=18;
-  var target=0, cur=0, base=null, events=0, lastG=null, perm='未';
+  var card=document.getElementById('card'), lensEl=card.querySelector('.lens');
+  var P=6, SOFT=.30;
+  var layers=[], set=null, center=.5, target=.5, cur=.5, base=null, events=0, lastG=null, perm='未';
 
-  function useSet(){ var k=location.hash.slice(1); (SETS[k]||SETS.neon).forEach(function(s,i){layers[i].src=s;}); }
+  function useSet(){
+    var k=location.hash.slice(1); set=SETS[k]||SETS.neon;
+    layers.forEach(function(l){l.remove();}); layers=[];
+    set.imgs.forEach(function(s,i){
+      var im=document.createElement('img'); im.className='layer'+(i?' masked':''); im.alt=''; im.src=s;
+      card.insertBefore(im,lensEl); layers.push(im);
+    });
+    center=(set.start-.5)/set.imgs.length; target=cur=center; base=null;
+  }
   useSet(); addEventListener('hashchange',useSet);
 
   function smooth(x){return x<=0?0:x>=1?1:x*x*(3-2*x);}
   (function loop(){
     cur+=(target-cur)*.2;
-    var n=layers.length, pos=(cur+1)/2;
+    var n=layers.length, pos=cur;
     for(var i=1;i<n;i++){ var b=i/n,w=SOFT/n; layers[i].style.setProperty('--w',(smooth((pos-(b-w/2))/w)*P).toFixed(2)+'px'); }
-    card.style.setProperty('--t',cur.toFixed(3));
+    card.style.setProperty('--t',(pos*2-1).toFixed(3));
     requestAnimationFrame(loop);
   })();
 
@@ -63,7 +70,7 @@ html,body{margin:0;width:100%;height:100%;background:#000;overflow:hidden;
     if(e.gamma==null) return;
     events++; var g=tiltOf(e); lastG=g;
     if(base===null) base=g;
-    target=Math.max(-1,Math.min(1,(g-base)/RANGE));
+    target=Math.max(0,Math.min(.999,center+(g-base)/(set.deg*layers.length)));
   }
   var listening=false;
   function listen(){ if(!listening){ listening=true; addEventListener('deviceorientation',onOrient,true); } }
@@ -90,7 +97,7 @@ html,body{margin:0;width:100%;height:100%;background:#000;overflow:hidden;
     var d=document.createElement('pre');
     d.style.cssText='position:fixed;left:8px;top:40px;z-index:9;margin:0;padding:8px;background:rgba(0,0,0,.7);color:#0f0;font:12px monospace;white-space:pre-wrap;max-width:90vw;pointer-events:none';
     document.body.appendChild(d);
-    setInterval(function(){d.textContent='版: v4\n許可が必要: '+needsPermission+'\n許可結果: '+perm+'\nセンサー受信: '+events+'回\n傾き: '+(lastG==null?'-':lastG.toFixed(1))+'\nhttps: '+(location.protocol==='https:')+'\nUA: '+navigator.userAgent;},300);
+    setInterval(function(){d.textContent='版: v5\n許可が必要: '+needsPermission+'\n許可結果: '+perm+'\nセンサー受信: '+events+'回\n傾き: '+(lastG==null?'-':lastG.toFixed(1))+'\nhttps: '+(location.protocol==='https:')+'\nUA: '+navigator.userAgent;},300);
   }
 })();
 </script>
