@@ -64,10 +64,18 @@ html,body{margin:0;width:100%;height:100%;background:#000;overflow:hidden;
   if(!needsPermission) addEventListener('deviceorientation',onOrient); // Android等は自動で開始
 
   // 画面タップ：iPhoneはここでセンサー許可、許可後は今の角度を中央に戻す
-  card.addEventListener('pointerdown',async e=>{
-    if(needsPermission&&!gyro){
-      try{ if(await DeviceOrientationEvent.requestPermission()==='granted') addEventListener('deviceorientation',onOrient); }catch(_){}
-    }
+  // iPhoneの許可ダイアログは「タップ完了(click/touchend)」の時しか出せないため、そこで依頼する
+  let asked=false;
+  function askPermission(){
+    if(!needsPermission||gyro||asked) return;
+    asked=true;
+    DeviceOrientationEvent.requestPermission().then(r=>{
+      if(r==='granted') addEventListener('deviceorientation',onOrient); else asked=false;
+    }).catch(()=>{asked=false;});
+  }
+  card.addEventListener('click',askPermission);
+  card.addEventListener('touchend',askPermission);
+  card.addEventListener('pointerdown',e=>{
     if(gyro){ base=null; return; }
     dragX=e.clientX; dragT=target;
   });
