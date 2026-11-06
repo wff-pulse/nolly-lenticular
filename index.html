@@ -11,8 +11,8 @@
 :root{--p:6px}
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;background:#000;overflow:hidden;
-  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;overscroll-behavior:none;touch-action:none}
-.card{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#000}
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;overscroll-behavior:none}
+.card{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#000;cursor:pointer}
 .layer{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
 .masked{-webkit-mask-image:repeating-linear-gradient(90deg,#000 0 var(--w,0px),transparent var(--w,0px) var(--p));
         mask-image:repeating-linear-gradient(90deg,#000 0 var(--w,0px),transparent var(--w,0px) var(--p))}
@@ -24,7 +24,7 @@ html,body{margin:0;width:100%;height:100%;background:#000;overflow:hidden;
 </style>
 </head>
 <body>
-<div class="card" id="card">
+<div class="card" id="card" onclick="void 0">
   <img class="layer" alt="">
   <img class="layer masked" alt="">
   <img class="layer masked" alt="">
@@ -32,75 +32,66 @@ html,body{margin:0;width:100%;height:100%;background:#000;overflow:hidden;
 </div>
 <script>
 (function(){
+  // 傾きだけで切り替え（指での操作なし）
   // 絵柄セット：左に傾けた時 → 正面 → 右に傾けた時。URL末尾 #odaiba でお台場セット
-  const SETS={
+  var SETS={
     neon:['neon-1.jpg','neon-2.jpg','neon-3.jpg'],
     odaiba:['odaiba-1.jpg','odaiba-2.jpg','odaiba-3.jpg']
   };
-  const card=document.getElementById('card');
-  const layers=[...card.querySelectorAll('.layer')];
-  const P=6, SOFT=.30, RANGE=18;
-  let target=0, cur=0, base=null, gyro=false, dragX=null, dragT=0;
+  var card=document.getElementById('card');
+  var layers=[].slice.call(card.querySelectorAll('.layer'));
+  var P=6, SOFT=.30, RANGE=18;
+  var target=0, cur=0, base=null, events=0, lastG=null, perm='未';
 
-  function useSet(){ const k=location.hash.slice(1); (SETS[k]||SETS.neon).forEach((s,i)=>layers[i].src=s); }
+  function useSet(){ var k=location.hash.slice(1); (SETS[k]||SETS.neon).forEach(function(s,i){layers[i].src=s;}); }
   useSet(); addEventListener('hashchange',useSet);
 
-  const smooth=x=>x<=0?0:x>=1?1:x*x*(3-2*x);
-  const setT=v=>{target=Math.max(-1,Math.min(1,v));};
+  function smooth(x){return x<=0?0:x>=1?1:x*x*(3-2*x);}
   (function loop(){
     cur+=(target-cur)*.2;
-    const n=layers.length, pos=(cur+1)/2;
-    for(let i=1;i<n;i++){ const b=i/n,w=SOFT/n; layers[i].style.setProperty('--w',(smooth((pos-(b-w/2))/w)*P).toFixed(2)+'px'); }
+    var n=layers.length, pos=(cur+1)/2;
+    for(var i=1;i<n;i++){ var b=i/n,w=SOFT/n; layers[i].style.setProperty('--w',(smooth((pos-(b-w/2))/w)*P).toFixed(2)+'px'); }
     card.style.setProperty('--t',cur.toFixed(3));
     requestAnimationFrame(loop);
   })();
 
   function tiltOf(e){
-    const ang=(screen.orientation&&screen.orientation.angle)||window.orientation||0;
+    var ang=(screen.orientation&&screen.orientation.angle)||window.orientation||0;
     if(ang===90) return e.beta; if(ang===-90||ang===270) return -e.beta; return e.gamma;
   }
-  function onOrient(e){ if(e.gamma==null) return; gyro=true; const g=tiltOf(e); if(base===null) base=g; setT((g-base)/RANGE); }
-  const needsPermission=typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function';
-  if(!needsPermission) addEventListener('deviceorientation',onOrient); // Android等は自動で開始
-
-  // 画面タップ：iPhoneはここでセンサー許可、許可後は今の角度を中央に戻す
-  // iPhoneの許可ダイアログは「タップ完了(click/touchend)」の時しか出せないため、そこで依頼する
-  let asked=false;
-  function askPermission(){
-    if(!needsPermission||gyro||asked) return;
-    asked=true;
-    DeviceOrientationEvent.requestPermission().then(r=>{
-      if(r==='granted') addEventListener('deviceorientation',onOrient); else asked=false;
-    }).catch(()=>{asked=false;});
+  function onOrient(e){
+    if(e.gamma==null) return;
+    events++; var g=tiltOf(e); lastG=g;
+    if(base===null) base=g;
+    target=Math.max(-1,Math.min(1,(g-base)/RANGE));
   }
+  var listening=false;
+  function listen(){ if(!listening){ listening=true; addEventListener('deviceorientation',onOrient,true); } }
+
+  var needsPermission=typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function';
+  if(!needsPermission){ listen(); perm='不要'; }
+
+  // iPhone：センサー許可は画面タップでしか求められないため、最初の1タップで許可を依頼
+  // 許可後のタップは「今の角度を中央に戻す」
+  function onTap(){
+    if(needsPermission&&perm!=='granted'){
+      try{
+        DeviceOrientationEvent.requestPermission().then(function(r){ perm=r; if(r==='granted') listen(); })
+          .catch(function(x){ perm='エラー:'+(x&&x.message||x); });
+      }catch(x){ perm='エラー:'+(x&&x.message||x); }
+      return;
+    }
+    base=null;
+  }
+  card.addEventListener('click',onTap);
+
   // 確認用：URLに ?debug を付けると状態を表示
   if(/debug/.test(location.search)){
-    const d=document.createElement('pre');
-    d.style.cssText='position:fixed;left:8px;top:40px;z-index:9;margin:0;padding:8px;background:rgba(0,0,0,.7);color:#0f0;font:12px monospace;white-space:pre-wrap;max-width:90vw';
-    document.body.append(d);
-    let ev=0,last=null,perm='未',err='';
-    addEventListener('deviceorientation',e=>{ev++;last=e.gamma;});
-    const orig=askPermission;
-    askPermission=function(){
-      if(needsPermission){ DeviceOrientationEvent.requestPermission().then(r=>{perm=r;if(r==='granted')addEventListener('deviceorientation',onOrient);}).catch(x=>{perm='エラー';err=String(x&&x.message||x);}); }
-      else perm='不要';
-    };
-    setInterval(()=>{d.textContent='版: v3\n許可が必要: '+needsPermission+'\n許可結果: '+perm+' '+err+'\nセンサー受信: '+ev+'回\ngamma: '+(last==null?'-':last.toFixed(1))+'\ngyro: '+gyro+'\nhttps: '+(location.protocol==='https:')+'\nUA: '+navigator.userAgent;},300);
+    var d=document.createElement('pre');
+    d.style.cssText='position:fixed;left:8px;top:40px;z-index:9;margin:0;padding:8px;background:rgba(0,0,0,.7);color:#0f0;font:12px monospace;white-space:pre-wrap;max-width:90vw;pointer-events:none';
+    document.body.appendChild(d);
+    setInterval(function(){d.textContent='版: v4\n許可が必要: '+needsPermission+'\n許可結果: '+perm+'\nセンサー受信: '+events+'回\n傾き: '+(lastG==null?'-':lastG.toFixed(1))+'\nhttps: '+(location.protocol==='https:')+'\nUA: '+navigator.userAgent;},300);
   }
-  card.addEventListener('click',()=>askPermission());
-  card.addEventListener('touchend',()=>askPermission());
-  if(false)
-  card.addEventListener('touchend',askPermission);
-  card.addEventListener('pointerdown',e=>{
-    if(gyro){ base=null; return; }
-    dragX=e.clientX; dragT=target;
-  });
-  card.addEventListener('pointermove',e=>{
-    if(gyro) return;
-    if(e.pointerType==='mouse'&&dragX===null){ setT((e.clientX/innerWidth)*2-1); return; }
-    if(dragX!==null) setT(dragT+(e.clientX-dragX)/(innerWidth*.6));
-  });
-  ['pointerup','pointercancel','pointerleave'].forEach(t=>card.addEventListener(t,()=>dragX=null));
 })();
 </script>
 </body>
