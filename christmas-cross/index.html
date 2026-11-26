@@ -46,13 +46,17 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .cross i{position:absolute;inset:38px;border-radius:12px;border:2px solid #fff;background:rgba(255,255,255,.12);
   display:grid;place-items:center;font-style:normal;font-size:13px}
 @keyframes nudge{50%{opacity:.35}}
-.intro .tap{margin-top:4px;padding:14px 30px;border-radius:999px;background:#ffd77a;color:#5a0a10;font-weight:700;font-size:17px;
+.intro .tap{border:0;cursor:pointer;font-family:inherit;margin-top:4px;padding:14px 30px;border-radius:999px;background:#ffd77a;color:#5a0a10;font-weight:700;font-size:17px;
   box-shadow:0 0 24px rgba(255,200,90,.55);animation:pulse 1.8s ease-in-out infinite}
 @keyframes pulse{50%{transform:scale(1.05)}}
 .sample-badge{position:absolute;z-index:6;pointer-events:none;top:calc(env(safe-area-inset-top,0px) + 14px);right:calc(env(safe-area-inset-right,0px) + 14px);
   padding:6px 12px;border-radius:6px;background:rgba(200,20,40,.85);color:#fff;font:700 13px/1.2 "Helvetica Neue",Arial,sans-serif;letter-spacing:.12em;text-align:center}
 .sample-badge small{display:block;font-size:10px;letter-spacing:.05em;font-weight:600}
-@media (prefers-reduced-motion:reduce){.cross span,.intro .tap{animation:none}}
+.hint{position:absolute;z-index:7;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translateX(-50%);
+  padding:9px 18px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:600 14px/1.2 "Hiragino Sans","Noto Sans JP",sans-serif;
+  pointer-events:none;white-space:nowrap;transition:opacity .5s;animation:pulse 1.8s ease-in-out infinite}
+.hint.hide{opacity:0}
+@media (prefers-reduced-motion:reduce){.hint{animation:none}.cross span,.intro .tap{border:0;cursor:pointer;font-family:inherit;animation:none}}
 </style>
 </head>
 <body>
@@ -60,14 +64,15 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <canvas id="cv"></canvas>
   <div class="ridges"></div><div class="ridgesH"></div><div class="rainbow"></div><div class="glare"></div><div class="vignette"></div>
   <div class="sample-badge">SAMPLE<small>サンプル</small></div>
+  <div class="hint" id="hint">画面をタップしてね</div>
   <div class="intro" id="intro" role="dialog" aria-label="楽しみ方">
     <h1>ノーリーのクリスマス</h1>
     <div class="cross" aria-hidden="true"><span class="u">▲</span><span class="d">▼</span><span class="l">◀</span><span class="r">▶</span><i>スマホ</i></div>
     <ol>
-      <li><b>1</b><div>画面のどこかをタップしてね<small>iPhoneは「動きと方向へのアクセス」で「許可」を押してね</small></div></li>
+      <li><b>1</b><div>表紙が出たら、画面のどこかをタップしてね<small>iPhoneは「動きと方向へのアクセス」で「許可」を押してね</small></div></li>
       <li><b>2</b><div>スマホを<strong>左右</strong>だけでなく<strong>上下</strong>にも傾けてみてね<small>傾けた方向ごとに、ちがうノーリーが見られるよ</small></div></li>
     </ol>
-    <div class="tap">タップしてはじめる</div>
+    <button type="button" class="tap" id="introOk">わかった！表紙を見る</button>
   </div>
 </div>
 <script>
@@ -171,9 +176,14 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   function listen(){ if(!listening){ listening=true; addEventListener('deviceorientation',onOrient,true); } }
   var needsPermission=typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function';
   if(!needsPermission){ listen(); perm='不要'; }
-  var intro=document.getElementById('intro');
+  var intro=document.getElementById('intro'), hint=document.getElementById('hint');
+  intro.addEventListener('click',function(ev){
+    ev.stopPropagation();                       // ここでは傾きを始めない（説明を閉じるだけ）
+    if(ev.target.id!=='introOk') return;        // ボタンを押した時だけ表紙へ
+    intro.classList.add('hide'); setTimeout(function(){intro.remove();},600);
+  });
+  addEventListener('deviceorientation',function(e){ if(e.gamma!=null&&hint) hint.classList.add('hide'); });
   card.addEventListener('click',function(){
-    if(intro&&!intro.classList.contains('hide')){ intro.classList.add('hide'); setTimeout(function(){intro.remove();},600); }
     if(needsPermission&&perm!=='granted'){
       try{ DeviceOrientationEvent.requestPermission().then(function(r){ perm=r; if(r==='granted') listen(); }).catch(function(x){ perm='エラー:'+(x&&x.message||x); }); }
       catch(x){ perm='エラー:'+(x&&x.message||x); }
