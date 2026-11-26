@@ -34,6 +34,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   background:radial-gradient(ellipse at 50% 40%,rgba(120,10,20,.72),rgba(10,0,4,.9));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
   font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;transition:opacity .5s ease}
 .intro.hide{opacity:0;pointer-events:none}
+.intro .howto{font-size:13px;letter-spacing:.12em;color:#f3d6c8;margin-bottom:-14px}
 .intro h1{margin:0;font-size:26px;letter-spacing:.06em;color:#ffd77a;text-shadow:0 2px 12px rgba(255,180,60,.5)}
 .intro ol{margin:0;padding:0;list-style:none;display:grid;gap:14px;max-width:320px;text-align:left}
 .intro li{display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.6}
@@ -44,7 +45,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .cross .u{top:0;left:50%;transform:translateX(-50%)}.cross .d{bottom:0;left:50%;transform:translateX(-50%)}
 .cross .l{left:0;top:50%;transform:translateY(-50%)}.cross .r{right:0;top:50%;transform:translateY(-50%)}
 .cross i{position:absolute;inset:38px;border-radius:12px;border:2px solid #fff;background:rgba(255,255,255,.12);
-  display:grid;place-items:center;font-style:normal;font-size:13px}
+  display:grid;place-items:center;text-align:center;font-style:normal;font-size:10.5px;line-height:1.3}
 @keyframes nudge{50%{opacity:.35}}
 .intro .tap{border:0;cursor:pointer;font-family:inherit;margin-top:4px;padding:14px 30px;border-radius:999px;background:#ffd77a;color:#5a0a10;font-weight:700;font-size:17px;
   box-shadow:0 0 24px rgba(255,200,90,.55);animation:pulse 1.8s ease-in-out infinite}
@@ -66,11 +67,12 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="sample-badge">SAMPLE<small>サンプル</small></div>
   <div class="hint" id="hint">画面をタップしてね</div>
   <div class="intro" id="intro" role="dialog" aria-label="楽しみ方">
+    <div class="howto">デジタルレンチキュラーの楽しみ方</div>
     <h1>ノーリーのクリスマス</h1>
-    <div class="cross" aria-hidden="true"><span class="u">▲</span><span class="d">▼</span><span class="l">◀</span><span class="r">▶</span><i>スマホ</i></div>
+    <div class="cross" aria-hidden="true"><span class="u">▲</span><span class="d">▼</span><span class="l">◀</span><span class="r">▶</span><i>スマート<br>フォン</i></div>
     <ol>
-      <li><b>1</b><div>表紙が出たら、画面のどこかをタップしてね<small>iPhoneは「動きと方向へのアクセス」で「許可」を押してね</small></div></li>
-      <li><b>2</b><div>スマホを<strong>左右</strong>だけでなく<strong>上下</strong>にも傾けてみてね<small>傾けた方向ごとに、ちがうノーリーが見られるよ</small></div></li>
+      <li><b>1</b><div>表紙が出たら、画面のどこかをタップしてね<small>スマートフォンに「動きと方向へのアクセス」などの確認が出たら「許可」を押してね</small></div></li>
+      <li><b>2</b><div>スマートフォンを<strong>左右</strong>だけでなく<strong>上下</strong>にも傾けてみてね<small>傾けた方向ごとに、ちがうノーリーが見られるよ</small></div></li>
     </ol>
     <button type="button" class="tap" id="introOk">わかった！表紙を見る</button>
   </div>
