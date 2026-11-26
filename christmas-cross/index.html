@@ -30,22 +30,22 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   background:radial-gradient(ellipse at 50% 45%,transparent 60%,rgba(0,0,0,.35) 100%)}
 /* はじめの説明画面 */
 .intro{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
-  padding:max(24px,env(safe-area-inset-top)) 28px max(24px,env(safe-area-inset-bottom));text-align:center;color:#5b4336;
-  background:radial-gradient(ellipse at 50% 28%,#fffaf2 0%,#f8eee1 55%,#eedfcc 100%);overflow:hidden;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  padding:max(24px,env(safe-area-inset-top)) 28px max(24px,env(safe-area-inset-bottom));text-align:center;color:#fbf3e6;
+  background:radial-gradient(ellipse at 50% 30%,#2f6b4d 0%,#1f4b37 55%,#15372a 100%);overflow:hidden;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
   font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",sans-serif;transition:opacity .5s ease}
 .intro.hide{opacity:0;pointer-events:none}
-.intro .howto{font-size:13px;letter-spacing:.12em;color:#9a7c68;margin-bottom:-14px}
-.intro h1 rt{font-size:11px;letter-spacing:.2em;color:#a98a74;font-weight:500;text-shadow:none}
-.intro h1{margin:0;font-size:26px;letter-spacing:.06em;color:#6e8f6a;text-shadow:none}
+.intro .howto{font-size:13px;letter-spacing:.12em;color:#d6e6d2;margin-bottom:-14px}
+.intro h1 rt{font-size:11px;letter-spacing:.2em;color:#f2c9c4;font-weight:500;text-shadow:none}
+.intro h1{margin:0;font-size:26px;letter-spacing:.06em;color:#fbf3e6;text-shadow:0 2px 0 rgba(0,0,0,.18)}
 .intro ol{margin:0;padding:0;list-style:none;display:grid;gap:14px;max-width:320px;text-align:left}
 .intro li{display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.6}
-.intro li b{flex:none;width:28px;height:28px;border-radius:50%;background:#e7b7a8;color:#fff;display:grid;place-items:center;font-size:15px}
-.intro small{display:block;font-size:12.5px;color:#9a7c68}
+.intro li b{flex:none;width:28px;height:28px;border-radius:50%;background:#c94a50;color:#fff;display:grid;place-items:center;font-size:15px}
+.intro small{display:block;font-size:12.5px;color:#cfe0cc}
 .cross{position:relative;width:132px;height:132px}
-.cross span{position:absolute;font-size:24px;color:#d9b98a;animation:nudge 1.6s ease-in-out infinite}
+.cross span{position:absolute;font-size:24px;color:#e8a09c;animation:nudge 1.6s ease-in-out infinite}
 .cross .u{top:0;left:50%;transform:translateX(-50%)}.cross .d{bottom:0;left:50%;transform:translateX(-50%)}
 .cross .l{left:0;top:50%;transform:translateY(-50%)}.cross .r{right:0;top:50%;transform:translateY(-50%)}
-.cross i{position:absolute;inset:38px;border-radius:12px;border:2px solid #c9ab92;background:#fffaf3;color:#7a5f4e;
+.cross i{position:absolute;inset:38px;border-radius:12px;border:2px solid #fbf3e6;background:rgba(255,255,255,.08);color:#fbf3e6;
   display:grid;place-items:center;text-align:center;font-style:normal;font-size:10.5px;line-height:1.3}
 @keyframes nudge{50%{opacity:.35}}
 .intro .tap{border:0;cursor:pointer;font-family:inherit;margin-top:4px;padding:14px 30px;border-radius:999px;background:#ffd77a;color:#fff;font-weight:700;font-size:17px;
@@ -66,12 +66,12 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .lights .bulb{position:absolute;width:9px;height:12px;border-radius:50% 50% 45% 45%;animation:twinkle 1.6s ease-in-out infinite}
 @keyframes twinkle{50%{opacity:.6}}
 .bells{display:flex;gap:4px;justify-content:center;margin-bottom:-10px}
-.bells svg{width:42px;height:48px;transform-origin:50% 4px;animation:ring 2.4s ease-in-out infinite;filter:drop-shadow(0 3px 4px rgba(150,110,60,.25))}
+.bells svg{width:42px;height:48px;transform-origin:50% 4px;animation:ring 2.4s ease-in-out infinite;filter:drop-shadow(0 3px 4px rgba(0,0,0,.25))}
 .bells svg:last-child{animation-delay:-1.2s}
 @keyframes ring{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
 .holly{position:absolute!important;bottom:-6px;width:120px;height:90px;z-index:2;pointer-events:none;opacity:.85}
 .holly.left{left:-8px}.holly.right{right:-8px;transform:scaleX(-1)}
-.intro .tap{background:linear-gradient(180deg,#8fb08a,#759a71);box-shadow:0 6px 16px rgba(117,154,113,.35)!important}
+.intro .tap{background:linear-gradient(180deg,#d4585e,#b43f46);box-shadow:0 6px 16px rgba(0,0,0,.25)!important}
 @media (prefers-reduced-motion:reduce){.bells svg,.lights .bulb{animation:none}}
 @media (prefers-reduced-motion:reduce){.hint{animation:none}.cross span,.intro .tap{animation:none}}
 </style>
@@ -84,8 +84,8 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
   <div class="hint" id="hint">画面をタップしてね</div>
   <div class="intro" id="intro" role="dialog" aria-label="NOLLYのクリスマス 楽しみ方">
     <canvas class="snow" id="snow"></canvas>
-    <div class="lights" aria-hidden="true"><svg viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M0 12 Q10 30 20 16 T40 16 T60 16 T80 16 T100 12" stroke="#9bb391" stroke-width="1.2" fill="none"/></svg><span class="bulb" style="left:4.0%;top:26px;background:#f2a7a0;box-shadow:0 0 6px 1px #f2a7a0;animation-delay:0.0s"></span><span class="bulb" style="left:12.4%;top:36px;background:#f6d58e;box-shadow:0 0 6px 1px #f6d58e;animation-delay:0.5s"></span><span class="bulb" style="left:20.8%;top:26px;background:#a9d3e6;box-shadow:0 0 6px 1px #a9d3e6;animation-delay:1.0s"></span><span class="bulb" style="left:29.2%;top:36px;background:#b8d7a3;box-shadow:0 0 6px 1px #b8d7a3;animation-delay:0.0s"></span><span class="bulb" style="left:37.6%;top:26px;background:#e8bcd6;box-shadow:0 0 6px 1px #e8bcd6;animation-delay:0.5s"></span><span class="bulb" style="left:46.0%;top:36px;background:#f2a7a0;box-shadow:0 0 6px 1px #f2a7a0;animation-delay:1.0s"></span><span class="bulb" style="left:54.4%;top:26px;background:#f6d58e;box-shadow:0 0 6px 1px #f6d58e;animation-delay:0.0s"></span><span class="bulb" style="left:62.8%;top:36px;background:#a9d3e6;box-shadow:0 0 6px 1px #a9d3e6;animation-delay:0.5s"></span><span class="bulb" style="left:71.2%;top:26px;background:#b8d7a3;box-shadow:0 0 6px 1px #b8d7a3;animation-delay:1.0s"></span><span class="bulb" style="left:79.6%;top:36px;background:#e8bcd6;box-shadow:0 0 6px 1px #e8bcd6;animation-delay:0.0s"></span><span class="bulb" style="left:88.0%;top:26px;background:#f2a7a0;box-shadow:0 0 6px 1px #f2a7a0;animation-delay:0.5s"></span><span class="bulb" style="left:96.4%;top:36px;background:#f6d58e;box-shadow:0 0 6px 1px #f6d58e;animation-delay:1.0s"></span></div>
-    <svg class="holly left" viewBox="0 0 120 90" aria-hidden="true"><g fill="#8fb08a" stroke="#6e8f6a" stroke-width="1"><path d="M8 80c10-22 30-30 52-26-6 4-4 10-12 10 4 6-2 10-10 8 2 8-6 10-12 6-4 6-12 6-18 2z"/><path d="M60 70c4-22 22-36 46-36-6 6-2 12-10 14 6 6 0 12-8 10 2 8-6 12-12 6-2 8-10 10-16 6z"/></g><g fill="#e08f86"><circle cx="54" cy="62" r="6"/><circle cx="64" cy="58" r="6"/><circle cx="58" cy="72" r="6"/></g><g fill="#fff" opacity=".7"><circle cx="52" cy="60" r="1.6"/><circle cx="62" cy="56" r="1.6"/><circle cx="56" cy="70" r="1.6"/></g></svg><svg class="holly right" viewBox="0 0 120 90" aria-hidden="true"><g fill="#8fb08a" stroke="#6e8f6a" stroke-width="1"><path d="M8 80c10-22 30-30 52-26-6 4-4 10-12 10 4 6-2 10-10 8 2 8-6 10-12 6-4 6-12 6-18 2z"/><path d="M60 70c4-22 22-36 46-36-6 6-2 12-10 14 6 6 0 12-8 10 2 8-6 12-12 6-2 8-10 10-16 6z"/></g><g fill="#e08f86"><circle cx="54" cy="62" r="6"/><circle cx="64" cy="58" r="6"/><circle cx="58" cy="72" r="6"/></g><g fill="#fff" opacity=".7"><circle cx="52" cy="60" r="1.6"/><circle cx="62" cy="56" r="1.6"/><circle cx="56" cy="70" r="1.6"/></g></svg>
+    <div class="lights" aria-hidden="true"><svg viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M0 12 Q10 30 20 16 T40 16 T60 16 T80 16 T100 12" stroke="#8fbf8a" stroke-width="1.2" fill="none"/></svg><span class="bulb" style="left:4.0%;top:26px;background:#e0565b;box-shadow:0 0 6px 1px #e0565b;animation-delay:0.0s"></span><span class="bulb" style="left:12.4%;top:36px;background:#e9c46a;box-shadow:0 0 6px 1px #e9c46a;animation:none"></span><span class="bulb" style="left:20.8%;top:26px;background:#f4ead8;box-shadow:0 0 6px 1px #f4ead8;animation-delay:1.0s"></span><span class="bulb" style="left:29.2%;top:36px;background:#6fbf73;box-shadow:0 0 6px 1px #6fbf73;animation-delay:0.0s"></span><span class="bulb" style="left:37.6%;top:26px;background:#e0565b;box-shadow:0 0 6px 1px #e0565b;animation-delay:0.5s"></span><span class="bulb" style="left:46.0%;top:36px;background:#e0565b;box-shadow:0 0 6px 1px #e0565b;animation-delay:1.0s"></span><span class="bulb" style="left:54.4%;top:26px;background:#e9c46a;box-shadow:0 0 6px 1px #e9c46a;animation:none"></span><span class="bulb" style="left:62.8%;top:36px;background:#f4ead8;box-shadow:0 0 6px 1px #f4ead8;animation-delay:0.5s"></span><span class="bulb" style="left:71.2%;top:26px;background:#6fbf73;box-shadow:0 0 6px 1px #6fbf73;animation-delay:1.0s"></span><span class="bulb" style="left:79.6%;top:36px;background:#e0565b;box-shadow:0 0 6px 1px #e0565b;animation-delay:0.0s"></span><span class="bulb" style="left:88.0%;top:26px;background:#e0565b;box-shadow:0 0 6px 1px #e0565b;animation-delay:0.5s"></span><span class="bulb" style="left:96.4%;top:36px;background:#e9c46a;box-shadow:0 0 6px 1px #e9c46a;animation:none"></span></div>
+    <svg class="holly left" viewBox="0 0 120 90" aria-hidden="true"><g fill="#4f9a62" stroke="#a9d6a8" stroke-width="1"><path d="M8 80c10-22 30-30 52-26-6 4-4 10-12 10 4 6-2 10-10 8 2 8-6 10-12 6-4 6-12 6-18 2z"/><path d="M60 70c4-22 22-36 46-36-6 6-2 12-10 14 6 6 0 12-8 10 2 8-6 12-12 6-2 8-10 10-16 6z"/></g><g fill="#d9484f"><circle cx="54" cy="62" r="6"/><circle cx="64" cy="58" r="6"/><circle cx="58" cy="72" r="6"/></g><g fill="#fff" opacity=".7"><circle cx="52" cy="60" r="1.6"/><circle cx="62" cy="56" r="1.6"/><circle cx="56" cy="70" r="1.6"/></g></svg><svg class="holly right" viewBox="0 0 120 90" aria-hidden="true"><g fill="#4f9a62" stroke="#a9d6a8" stroke-width="1"><path d="M8 80c10-22 30-30 52-26-6 4-4 10-12 10 4 6-2 10-10 8 2 8-6 10-12 6-4 6-12 6-18 2z"/><path d="M60 70c4-22 22-36 46-36-6 6-2 12-10 14 6 6 0 12-8 10 2 8-6 12-12 6-2 8-10 10-16 6z"/></g><g fill="#d9484f"><circle cx="54" cy="62" r="6"/><circle cx="64" cy="58" r="6"/><circle cx="58" cy="72" r="6"/></g><g fill="#fff" opacity=".7"><circle cx="52" cy="60" r="1.6"/><circle cx="62" cy="56" r="1.6"/><circle cx="56" cy="70" r="1.6"/></g></svg>
     <div class="bells"><svg viewBox="0 0 42 48" aria-hidden="true"><defs><linearGradient id="bg1" x1="0" x2="1"><stop offset="0" stop-color="#b8862b"/><stop offset=".45" stop-color="#ffe08a"/><stop offset="1" stop-color="#a8741c"/></linearGradient></defs><path d="M21 2c2 0 3 1 3 3v2c7 2 11 8 11 16v9l4 6H3l4-6v-9c0-8 4-14 11-16V5c0-2 1-3 3-3z" fill="url(#bg1)"/><circle cx="21" cy="42" r="4.2" fill="#c8922e"/><path d="M14 9c6-3 14-3 20 1" stroke="#c7263a" stroke-width="3" fill="none" stroke-linecap="round"/></svg><svg viewBox="0 0 42 48" aria-hidden="true"><defs><linearGradient id="bg2" x1="0" x2="1"><stop offset="0" stop-color="#b8862b"/><stop offset=".45" stop-color="#ffe08a"/><stop offset="1" stop-color="#a8741c"/></linearGradient></defs><path d="M21 2c2 0 3 1 3 3v2c7 2 11 8 11 16v9l4 6H3l4-6v-9c0-8 4-14 11-16V5c0-2 1-3 3-3z" fill="url(#bg2)"/><circle cx="21" cy="42" r="4.2" fill="#c8922e"/><path d="M14 9c6-3 14-3 20 1" stroke="#c7263a" stroke-width="3" fill="none" stroke-linecap="round"/></svg></div>
     <div class="howto">デジタルレンチキュラーの楽しみ方</div>
     <h1><ruby>NOLLY<rt>ノーリー</rt></ruby>のクリスマス</h1>
@@ -214,7 +214,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
         var f=fl[i];
         if(!still){ f.y+=f.s*0.0022*(1+f.r*.3); f.w+=0.02; f.x+=Math.sin(f.w)*0.0006; if(f.y>1.02){f.y=-0.02;f.x=Math.random();} }
         g.beginPath(); g.arc(f.x*W,f.y*H,f.r*R,0,6.283);
-        g.fillStyle='rgba(255,255,255,.95)'; g.fill(); g.lineWidth=R*0.8; g.strokeStyle='rgba(185,160,140,'+(0.25+f.r*0.08)+')'; g.stroke();
+        g.fillStyle='rgba(255,255,255,'+(0.55+f.r*0.15)+')'; g.fill();
       }
       requestAnimationFrame(draw);
     }
